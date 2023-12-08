@@ -1,50 +1,63 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 using namespace sf;
 
-const int H = 15;
-const int W = 15;
+const int fieldHeight = 22;
+const int fieldWidth = 25;
 
 const int blockSize = 50;
 
-int Sti = 0;
-bool shot = false;
+float offsetX = -300;
+float offsetY = 700;
 
-String TileMap[H] = {
-    " AAAAA11AAAA77 ",
-    "B             E",
-    "B             E",
-    "2             E",
-    "2             4",
-    "B             E",
-    "B             E",
-    "5             E",
-    "B             E",
-    "B             E",
-    "B             E",
-    "B             E",
-    "B             E",
-    "B             E",
-    " CCCCC33CCCCCC ",
+bool game = true;
+bool win = false;
+
+String Field[fieldHeight] = {
+    "       AAAAA7A AAAAAAAAA ",
+    "      B       D         K",
+    "      B GFH   I   J     K",
+    "      B   D       D     K",
+    "      B   EFF8FFFFB     K",
+    "      B   D       D     K",
+    "      B  WD       D     K",
+    "       CCCB   J   D     K",
+    "          B   D   KCCCH K",
+    "          B   D  G    B K",
+    "          5   D   6AAAL K",
+    "          B   D   D     K",
+    "          5   KM  D     K",
+    "   AAAA AAL   D   D     K",
+    "  B    I      D   D  GFF ",
+    "  B J     NCCCB  GB     K",
+    "  B D     K   B   6     K",
+    " AL KCCCC3    B   KFFFM K",
+    "B   K         B   I     K",
+    "B   K         B         4",
+    "B   K         2     J   4",
+    " CCC           CCCCC CCC ",
 };
 
 class Player
 {
   public:
-    bool left, right, up, down;
     float dx, dy;
-    int rotate;
     FloatRect rect;
     Sprite sprite;
+    bool left, right, up, down;
+    int rotate;
 
     Player(Texture &image)
     {
         sprite.setTexture(image);
-        rect = FloatRect(blockSize, blockSize * 8, 50, 50);
+        rect = FloatRect(blockSize * 2, blockSize * 20, 50, 50);
         sprite.setTextureRect(IntRect(0, 0, 50, 50));
 
         dx = dy = 0;
+
         down = true;
+
         up = left = right = false;
     }
 
@@ -70,36 +83,47 @@ class Player
         else if (dx == 0 && dy == 0)
             sprite.setTextureRect(IntRect(blockSize * rotate, 0, blockSize, blockSize));
 
-        sprite.setPosition(rect.left, rect.top);
+        sprite.setPosition(rect.left - offsetX, rect.top - offsetY);
     }
 
-    void collision(int direction)
+    void collision(int dir)
     {
         for (int i = rect.top / blockSize; i < (rect.top + rect.height) / blockSize; i++)
             for (int j = rect.left / blockSize; j < (rect.left + rect.width) / blockSize; j++)
             {
-                if (TileMap[i][j] == 'A' || TileMap[i][j] == 'B' || TileMap[i][j] == 'C' || TileMap[i][j] == 'E' || TileMap[i][j] == 'F' || TileMap[i][j] == '7')
+                if (Field[i][j] == 'A' || Field[i][j] == 'B' || Field[i][j] == 'C' || Field[i][j] == 'D' ||
+                    Field[i][j] == 'E' || Field[i][j] == 'F' || Field[i][j] == 'G' || Field[i][j] == 'H' ||
+                    Field[i][j] == 'I' || Field[i][j] == 'J' || Field[i][j] == 'K' || Field[i][j] == 'L' ||
+                    Field[i][j] == 'M' || Field[i][j] == 'N' ||
+                    Field[i][j] == '5' || Field[i][j] == '6' || Field[i][j] == '7' || Field[i][j] == '8')
                 {
-                    if (dx > 0 && direction == 0)
+                    if (dx > 0 && dir == 0)
                     {
                         rect.left = j * blockSize - rect.width;
                         dx = 0;
                     }
-                    if (dx < 0 && direction == 0)
+                    if (dx < 0 && dir == 0)
                     {
                         rect.left = j * blockSize + blockSize;
                         dx = 0;
                     }
-                    if (dy > 0 && direction == 1)
+                    if (dy > 0 && dir == 1)
                     {
                         rect.top = i * blockSize - rect.height;
                         dy = 0;
                     }
-                    if (dy < 0 && direction == 1)
+                    if (dy < 0 && dir == 1)
                     {
                         rect.top = i * blockSize + blockSize;
                         dy = 0;
                     }
+                }
+
+                if (Field[i][j] == '1' || Field[i][j] == '2' || Field[i][j] == '3' || Field[i][j] == '4')
+                    game = false;
+                if (Field[i][j] == 'W')
+                {
+                    win = true;
                 }
             }
     }
@@ -109,10 +133,10 @@ class Bullet
 {
   public:
     float dx, dy;
-    int px, py, rotate, timer, Sti;
-    bool pusk, shot;
     FloatRect rect;
     Sprite sprite;
+    int px, py, rotate, timer, Sti;
+    bool pusk, shot;
 
     void set(Texture &image, int x, int y, int r)
     {
@@ -122,23 +146,23 @@ class Bullet
 
         if (r == 1)
         {
-            dx = 0.5;
+            dx = 0.2;
             dy = 0;
         }
         else if (r == 2)
         {
-            dx = -0.5;
+            dx = -0.2;
             dy = 0;
         }
         else if (r == 3)
         {
             dx = 0;
-            dy = 0.5;
+            dy = 0.2;
         }
         else if (r == 4)
         {
             dx = 0;
-            dy = -0.5;
+            dy = -0.2;
         }
 
         px = x;
@@ -158,7 +182,7 @@ class Bullet
 
             if (timer == 0)
             {
-                timer = 2000;
+                timer = 1000;
                 pusk = true;
 
                 shot = true;
@@ -183,23 +207,26 @@ class Bullet
             collision(1);
         }
 
-        sprite.setPosition(rect.left, rect.top);
+        sprite.setPosition(rect.left - offsetX, rect.top - offsetY);
     }
 
-    void collision(int direction)
+    void collision(int dir)
     {
         for (int i = rect.top / blockSize; i < (rect.top + rect.height) / blockSize; i++)
             for (int j = rect.left / blockSize; j < (rect.left + rect.width) / blockSize; j++)
             {
-                if (TileMap[i][j] == 'A' || TileMap[i][j] == 'B' || TileMap[i][j] == 'C' ||
-                    TileMap[i][j] == 'E' || TileMap[i][j] == 'F' || TileMap[i][j] == '1' || TileMap[i][j] == '7')
+                if (Field[i][j] == 'A' || Field[i][j] == 'B' || Field[i][j] == 'C' || Field[i][j] == 'D' ||
+                    Field[i][j] == 'E' || Field[i][j] == 'F' || Field[i][j] == 'G' || Field[i][j] == 'H' ||
+                    Field[i][j] == 'I' || Field[i][j] == 'J' || Field[i][j] == 'K' || Field[i][j] == 'L' ||
+                    Field[i][j] == 'M' || Field[i][j] == 'N' ||
+                    Field[i][j] == '5' || Field[i][j] == '6' || Field[i][j] == '7' || Field[i][j] == '8')
                 {
-                    if (dx != 0 && direction == 0)
+                    if (dx != 0 && dir == 0)
                     {
                         rect.left = px;
                         pusk = false;
                     }
-                    if (dy != 0 && direction == 1)
+                    if (dy != 0 && dir == 1)
                     {
                         rect.top = py;
                         pusk = false;
@@ -208,10 +235,14 @@ class Bullet
             }
     }
 
-    void initBullets(Bullet *bullet, Texture &bulletTexture)
+    void initBullet(Bullet *bullet, Texture &bulletTexture)
     {
-        bullet[0].set(bulletTexture, blockSize, blockSize * 6, 1);
-        bullet[1].set(bulletTexture, blockSize * 11, blockSize, 3);
+        bullet[0].set(bulletTexture, blockSize * 11, blockSize * 12, 1);
+        bullet[1].set(bulletTexture, blockSize * 11, blockSize * 10, 1);
+        bullet[2].set(bulletTexture, blockSize * 17, blockSize * 10, 2);
+        bullet[3].set(bulletTexture, blockSize * 17, blockSize * 16, 2);
+        bullet[4].set(bulletTexture, blockSize * 12, blockSize * 1, 3);
+        bullet[5].set(bulletTexture, blockSize * 13, blockSize * 3, 4);
     }
 };
 
@@ -219,13 +250,17 @@ class Box
 {
   public:
     Sprite sprite;
-    int timer = 4000;
-    bool big = false;
+    int timer = 2000;
+    bool big = 0;
+    int Bx, By;
+    FloatRect rect;
 
     void set(Texture &image, int x, int y)
     {
         sprite.setTexture(image);
-        sprite.setPosition(x, y);
+
+        Bx = x;
+        By = y;
     }
 
     void update()
@@ -236,21 +271,27 @@ class Box
         {
             if (big == 0)
             {
-                big = true;
-                timer = 2000;
+                big = 150;
+                timer = 1000;
             }
             else
             {
-                big = false;
-                timer = 4000;
+                big = 0;
+                timer = 2000;
             }
         }
 
+        rect.left = Bx;
+        rect.top = By;
+
         sprite.setTextureRect(IntRect(150 * big, 0, 150, 150));
+        sprite.setPosition(rect.left - offsetX, rect.top - offsetY);
     }
+
     void initBoxes(Box *box, Texture &boxTexture)
     {
-        box[0].set(boxTexture, blockSize * 7, blockSize);
+        box[0].set(boxTexture, blockSize * 21, blockSize * 18);
+        box[1].set(boxTexture, blockSize * 19, blockSize);
     }
 };
 
@@ -299,68 +340,86 @@ class Bat
         else
             sprite.setTextureRect(IntRect(50 * int(curFrame) + 50, 0, -50, 50));
 
-        sprite.setPosition(rect.left, rect.top);
+        sprite.setPosition(rect.left - offsetX, rect.top - offsetY);
     }
 
-    void collision(int direction)
+    void collision(int dir)
     {
         for (int i = rect.top / blockSize; i < (rect.top + rect.height) / blockSize; i++)
             for (int j = rect.left / blockSize; j < (rect.left + rect.width) / blockSize; j++)
-                if (TileMap[i][j] == 'A' || TileMap[i][j] == 'B' || TileMap[i][j] == 'C' ||
-                    TileMap[i][j] == 'E' || TileMap[i][j] == 'F' || TileMap[i][j] == '7')
+                if (Field[i][j] == 'A' || Field[i][j] == 'B' || Field[i][j] == 'C' || Field[i][j] == 'D' ||
+                    Field[i][j] == 'E' || Field[i][j] == 'F' || Field[i][j] == 'G' || Field[i][j] == 'H' ||
+                    Field[i][j] == 'I' || Field[i][j] == 'J' || Field[i][j] == 'K' || Field[i][j] == 'L' ||
+                    Field[i][j] == 'M' || Field[i][j] == 'N' ||
+                    Field[i][j] == '5' || Field[i][j] == '6' || Field[i][j] == '7' || Field[i][j] == '8')
                 {
-                    if (dx != 0 && direction == 0)
+                    if (dx > 0 && dir == 0)
                     {
                         dx *= -1;
                     }
-                    else if (dy != 0 && direction == 1)
+                    else if (dx < 0 && dir == 0)
+                    {
+                        dx *= -1;
+                    }
+                    else if (dy < 0 && dir == 1)
+                    {
+                        dy *= -1;
+                    }
+                    else if (dy > 0 && dir == 1)
                     {
                         dy *= -1;
                     }
                 }
     }
+
     void initBats(Bat *bat, Texture &batTexture)
     {
-        bat[0].set(batTexture, blockSize * 12, blockSize * 5, true);
-        bat[1].set(batTexture, blockSize * 4, blockSize * 4, false);
+        bat[0].set(batTexture, blockSize * 8, blockSize * 15, false);
+        bat[1].set(batTexture, blockSize * 16, blockSize * 7, true);
+        bat[2].set(batTexture, blockSize * 16, blockSize * 13, true);
+        bat[3].set(batTexture, blockSize * 20, blockSize * 12, false);
     }
 };
 
-// class InitMobs
-// {}
-
-// void initLevel() {
-
-// }
-
 void texturesTreatment()
 {
-    RenderWindow window(VideoMode(750, 750), "tomb of the mask");
+    RenderWindow window(VideoMode(1200, 900), "tomb of the mask");
+    Texture t;
+    t.loadFromFile("additional/Paint/title.png");
+    Sprite titleTexture(t);
 
-    Texture titleTexture;
-    titleTexture.loadFromFile("additional/Paint/title.png");
-    Sprite title(titleTexture);
+    Texture Picture;
+    Picture.loadFromFile("additional/Paint/player.png");
+    Player playerTexture(Picture);
 
-    Texture playerTexture;
-    playerTexture.loadFromFile("additional/Paint/player.png");
-    Player player(playerTexture);
-
-    Texture bulletTexture;
-    bulletTexture.loadFromFile("additional/Paint/bullet.png");
-    Bullet bullet[4];
-    bullet[0].initBullets(bullet, bulletTexture);
+    Texture batTexture;
+    batTexture.loadFromFile("additional/Paint/bat.png");
+    Bat bat[4];
+    bat[0].initBats(bat, batTexture);
 
     Texture boxTexture;
     boxTexture.loadFromFile("additional/Paint/box.png");
     Box box[2];
     box[0].initBoxes(box, boxTexture);
 
-    Texture batTexture;
-    batTexture.loadFromFile("additional/Paint/bat.png");
-    Bat bat[2];
-    bat[0].initBats(bat, batTexture);
+    Texture bulletTexture;
+    bulletTexture.loadFromFile("additional/Paint/bullet.png");
+    Bullet bullet[6];
+    bullet[0].initBullet(bullet, bulletTexture);
 
     Clock clock;
+
+    float isk = 100;
+
+    Texture yl;
+    yl.loadFromFile("additional/Paint/youlose.png");
+    Sprite youlose(yl);
+    youlose.setPosition(100, 210);
+
+    Texture wn;
+    wn.loadFromFile("additional/Paint/youwin.png");
+    Sprite youwin(wn);
+    youwin.setPosition(100, 350);
 
     while (window.isOpen())
     {
@@ -368,90 +427,153 @@ void texturesTreatment()
         clock.restart();
         time = time / 800;
 
+        Vector2i pos = Mouse::getPosition(window);
+
         Event event;
         while (window.pollEvent(event))
         {
             if (event.type == Event::Closed)
                 window.close();
 
-            if (event.type == Event::KeyPressed && player.dx == 0 && player.dy == 0)
+            if (event.type == Event::KeyPressed && playerTexture.dx == 0 && playerTexture.dy == 0)
             {
                 if (event.key.code == Keyboard::Right)
                 {
-                    player.dx = 1;
-                    player.left = player.up = player.down = false;
-                    player.right = true;
+                    playerTexture.dx = 1;
+
+                    playerTexture.left = playerTexture.up = playerTexture.down = false;
+                    playerTexture.right = true;
                 }
                 if (event.key.code == Keyboard::Left)
                 {
-                    player.dx = -1;
-                    player.right = player.up = player.down = false;
-                    player.left = true;
+                    playerTexture.dx = -1;
+
+                    playerTexture.right = playerTexture.up = playerTexture.down = false;
+                    playerTexture.left = true;
                 }
                 if (event.key.code == Keyboard::Up)
                 {
-                    player.dy = -1;
-                    player.right = player.left = player.down = false;
-                    player.up = true;
+                    playerTexture.dy = -1;
+
+                    playerTexture.right = playerTexture.left = playerTexture.down = false;
+                    playerTexture.up = true;
                 }
                 if (event.key.code == Keyboard::Down)
                 {
-                    player.dy = 1;
-                    player.right = player.left = player.up = false;
-                    player.down = true;
+                    playerTexture.dy = 1;
+
+                    playerTexture.right = playerTexture.left = playerTexture.up = false;
+                    playerTexture.down = true;
                 }
             }
         }
 
-        player.update(time);
-        for (int i = 0; i < 2; i++)
-            box[i].update();
-        for (int i = 0; i < 2; i++)
-            bat[i].update(time);
         for (int i = 0; i < 4; i++)
-            bullet[i].update(time);
+            if (playerTexture.rect.intersects(bat[i].rect))
+                game = false;
+
+        for (int i = 0; i < 6; i++)
+            if (bullet[i].pusk && playerTexture.rect.intersects(bullet[i].rect))
+                game = false;
+
+        for (int i = 0; i < 2; i++)
+            if (box[i].big == 1 &&
+                box[i].rect.left <= playerTexture.rect.left && playerTexture.rect.left <= box[i].rect.left + 2 * blockSize &&
+                box[i].rect.top <= playerTexture.rect.top && playerTexture.rect.top <= box[i].rect.top + 2 * blockSize)
+                game = false;
+
+        if (playerTexture.rect.left > 250 && playerTexture.rect.left < 1000)
+            offsetX = playerTexture.rect.left - 550;
+        if (playerTexture.rect.top > 250 && playerTexture.rect.top < 1500)
+            offsetY = playerTexture.rect.top - 350;
+
+        if (!game /* && !sound.stop*/)
+        {
+            // sound.lose.play();
+            // sound.stop = true;
+        }
+
+        if (game && !win)
+        {
+            for (int i = 0; i < 4; i++)
+                bat[i].update(time);
+            playerTexture.update(time);
+            for (int i = 0; i < 2; i++)
+                box[i].update();
+            for (int i = 0; i < 6; i++)
+                bullet[i].update(time);
+        }
         window.clear(Color::Black);
-        for (int i = 0; i < H; i++)
-            for (int j = 0; j < W; j++)
+        for (int i = 0; i < fieldHeight; i++)
+            for (int j = 0; j < fieldWidth; j++)
             {
-                if (TileMap[i][j] == 'A')
-                    title.setTextureRect(IntRect(0, 0, blockSize, blockSize));
-                if (TileMap[i][j] == 'B')
-                    title.setTextureRect(IntRect(blockSize, 0, blockSize, blockSize));
-                if (TileMap[i][j] == 'C')
-                    title.setTextureRect(IntRect(blockSize * 2, 0, blockSize, blockSize));
-                if (TileMap[i][j] == 'E')
-                    title.setTextureRect(IntRect(blockSize * 3, 0, blockSize, blockSize));
-                if (TileMap[i][j] == '1')
-                    title.setTextureRect(IntRect(0, blockSize, blockSize, blockSize));
-                if (TileMap[i][j] == '2')
-                    title.setTextureRect(IntRect(blockSize, blockSize, blockSize, blockSize));
-                if (TileMap[i][j] == '3')
-                    title.setTextureRect(IntRect(blockSize * 2, blockSize, blockSize, blockSize));
-                if (TileMap[i][j] == '4')
-                    title.setTextureRect(IntRect(blockSize * 3, blockSize, blockSize, blockSize));
-                if (TileMap[i][j] == '5')
-                    title.setTextureRect(IntRect(blockSize * 4, blockSize * bullet[0].shot, blockSize, blockSize));
-                if (TileMap[i][j] == '6')
-                    title.setTextureRect(IntRect(blockSize * 5, blockSize * bullet[1].shot, blockSize, blockSize));
-                if (TileMap[i][j] == '7')
-                    title.setTextureRect(IntRect(blockSize * 6, blockSize * bullet[2].shot, blockSize, blockSize));
-                if (TileMap[i][j] == '8')
-                    title.setTextureRect(IntRect(blockSize * 7, blockSize * bullet[3].shot, blockSize, blockSize));
-                if (TileMap[i][j] == ' ')
+                if (Field[i][j] == 'A')
+                    titleTexture.setTextureRect(IntRect(0, 0, blockSize, blockSize));
+                if (Field[i][j] == 'B')
+                    titleTexture.setTextureRect(IntRect(blockSize, 0, blockSize, blockSize));
+                if (Field[i][j] == 'C')
+                    titleTexture.setTextureRect(IntRect(blockSize * 2, 0, blockSize, blockSize));
+                if (Field[i][j] == 'D')
+                    titleTexture.setTextureRect(IntRect(0, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'E')
+                    titleTexture.setTextureRect(IntRect(blockSize * 3, 0, blockSize, blockSize));
+                if (Field[i][j] == 'F')
+                    titleTexture.setTextureRect(IntRect(blockSize, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'G')
+                    titleTexture.setTextureRect(IntRect(blockSize * 2, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'H')
+                    titleTexture.setTextureRect(IntRect(blockSize * 3, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'I')
+                    titleTexture.setTextureRect(IntRect(blockSize * 4, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'J')
+                    titleTexture.setTextureRect(IntRect(blockSize * 5, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'K')
+                    titleTexture.setTextureRect(IntRect(blockSize * 3, 0, blockSize, blockSize));
+                if (Field[i][j] == 'L')
+                    titleTexture.setTextureRect(IntRect(blockSize * 6, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'M')
+                    titleTexture.setTextureRect(IntRect(blockSize * 7, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == 'N')
+                    titleTexture.setTextureRect(IntRect(blockSize * 8, blockSize * 2, blockSize, blockSize));
+                if (Field[i][j] == '1')
+                    titleTexture.setTextureRect(IntRect(0, blockSize, blockSize, blockSize));
+                if (Field[i][j] == '2')
+                    titleTexture.setTextureRect(IntRect(blockSize, blockSize, blockSize, blockSize));
+                if (Field[i][j] == '3')
+                    titleTexture.setTextureRect(IntRect(blockSize * 2, blockSize, blockSize, blockSize));
+                if (Field[i][j] == '4')
+                    titleTexture.setTextureRect(IntRect(blockSize * 3, 0, blockSize, blockSize));
+                if (Field[i][j] == '5')
+                    titleTexture.setTextureRect(IntRect(blockSize * 4, blockSize * bullet[0].shot, blockSize, blockSize));
+                if (Field[i][j] == '6')
+                    titleTexture.setTextureRect(IntRect(blockSize * 5, blockSize * bullet[0].shot, blockSize, blockSize));
+                if (Field[i][j] == '7')
+                    titleTexture.setTextureRect(IntRect(blockSize * 6, blockSize * bullet[0].shot, blockSize, blockSize));
+                if (Field[i][j] == '8')
+                    titleTexture.setTextureRect(IntRect(blockSize * 7, blockSize * bullet[0].shot, blockSize, blockSize));
+                if (Field[i][j] == 'W')
+                    titleTexture.setTextureRect(IntRect(blockSize * 8, 0, blockSize, blockSize));
+                if (Field[i][j] == ' ')
                     continue;
 
-                title.setPosition(j * blockSize, i * blockSize);
-                window.draw(title);
+                titleTexture.setPosition(j * blockSize - offsetX, i * blockSize - offsetY);
+                window.draw(titleTexture);
             }
-        window.draw(player.sprite);
-        for (int i = 0; i < 2; i++)
-            window.draw(box[i].sprite);
-        for (int i = 0; i < 2; i++)
-            window.draw(bat[i].sprite);
-        for (int i = 0; i < 4; i++)
+        if (!win)
+            window.draw(playerTexture.sprite);
+        for (int i = 0; i < 6; i++)
             if (bullet[i].pusk)
                 window.draw(bullet[i].sprite);
+        for (int i = 0; i < 4; i++)
+            window.draw(bat[i].sprite);
+        for (int i = 0; i < 2; i++)
+            window.draw(box[i].sprite);
+        if (!game)
+        {
+            window.draw(youlose);
+        }
+        else if (win)
+            window.draw(youwin);
         window.display();
     }
 }
@@ -459,6 +581,5 @@ void texturesTreatment()
 int main()
 {
     texturesTreatment();
-
     return 0;
 }

@@ -3,6 +3,23 @@
 
 game1.1/CMakeFiles/game1.1.dir/main.cpp.obj
  C:/study/ispring/gamepp/game1.1/main.cpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/AlResource.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/Export.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/InputSoundFile.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/Listener.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/Music.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/OutputSoundFile.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/Sound.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundBuffer.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundBufferRecorder.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundFileFactory.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundFileFactory.inl
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundFileReader.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundFileWriter.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundRecorder.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundSource.hpp
+ C:/system/CppDistro/MinGW/include/SFML/Audio/SoundStream.hpp
  C:/system/CppDistro/MinGW/include/SFML/Config.hpp
  C:/system/CppDistro/MinGW/include/SFML/Graphics.hpp
  C:/system/CppDistro/MinGW/include/SFML/Graphics/BlendMode.hpp
