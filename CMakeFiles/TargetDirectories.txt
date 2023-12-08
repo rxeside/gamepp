@@ -1,0 +1,5 @@
+C:/study/ispring/gamepp/CMakeFiles/edit_cache.dir
+C:/study/ispring/gamepp/CMakeFiles/rebuild_cache.dir
+C:/study/ispring/gamepp/game1.1/CMakeFiles/game1.1.dir
+C:/study/ispring/gamepp/game1.1/CMakeFiles/edit_cache.dir
+C:/study/ispring/gamepp/game1.1/CMakeFiles/rebuild_cache.dir
